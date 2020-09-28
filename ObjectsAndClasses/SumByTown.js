@@ -6,15 +6,13 @@ function solve(input) {
         let town = input[index];
         let income = Number(input[index + 1]);
 
-        if (towns[town] == undefined) {
-            towns[town] = income;
+        if (!towns[town]) {
+            towns[town] = 0;
         }
-        else {
             towns[town] += income;
-        }
     }
 
-    return JSON.stringify(towns);
+   return JSON.stringify(towns);
 }
 
 
