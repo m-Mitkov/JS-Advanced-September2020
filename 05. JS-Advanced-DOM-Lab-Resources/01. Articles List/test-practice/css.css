@@ -1,0 +1,16 @@
+h1{
+    text-align: center;
+    color: red;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 45px;
+}
+
+.blank{
+    width: fit-content;
+    display: flex;
+    flex-direction: column;
+}
+
+button:hoover{
+    zoom: 25px;
+}
