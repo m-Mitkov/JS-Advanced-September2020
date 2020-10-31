@@ -10,3 +10,4 @@ function lookupChar(string, index) {
 }
 
 module.exports = {lookupChar};
+// npm install in the terminal => to test my code

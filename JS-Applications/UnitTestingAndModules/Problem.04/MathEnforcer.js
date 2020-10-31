@@ -20,3 +20,4 @@ let mathEnforcer = {
 };
 
 module.exports = mathEnforcer;
+// npm install in the terminal => to test my code

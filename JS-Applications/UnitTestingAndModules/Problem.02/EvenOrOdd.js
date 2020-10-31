@@ -9,3 +9,4 @@ function isOddOrEven(string) {
 }
 
 module.exports = {isOddOrEven};
+// npm install in the terminal => to test my code
