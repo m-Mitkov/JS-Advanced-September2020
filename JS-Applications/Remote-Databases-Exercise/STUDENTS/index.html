@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Students</title>
+    <link rel="stylesheet" href="./styles.css">
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/8.0.1/firebase-app.js"></script>
+</head>
+
+<body onload="loadStudents()">
+    <table id="results">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Faculty Number</th>
+                <th>Grade</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <form>
+
+        <label>First Name</label>
+        <input type="title" id="name" placeholder="Name...">
+
+        <label>Last Name</label>
+        <input type="title" id="last-name" placeholder="Last Name...">
+
+        <label>Faculty Number</label>
+        <input type="title" id="facultyN" placeholder="facultyN...">
+
+        <label>Grade</label>
+        <input type="title" id="grade" placeholder="grade...">
+        
+        <div>
+            <button id="submit-Btn">Submit</button>
+        </div>
+    </form>
+    <script src="./app.js"></script>
+</body>
+
+</html>
