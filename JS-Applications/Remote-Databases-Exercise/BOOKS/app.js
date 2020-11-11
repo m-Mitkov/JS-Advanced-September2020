@@ -11,8 +11,7 @@ let htmlElements = {
     editTitleElement: () => document.getElementById('edit-title'),
     editAuthorElement: () => document.getElementById('edit-author'),
     editIsbnElement: () => document.getElementById('edit-isbn'),
-    editButtonLoadBooks: () => document.getElementById('edit-ButtonLoadBooks'),
-    editButtonInEditForm: () => document.getElementById('edit-Btn'),
+    submitEditedBookBtn: () => document.getElementById('submit-editedBook'),
 }
 
 function bookTemplate(data) {
@@ -22,14 +21,13 @@ function bookTemplate(data) {
        <td>${author}</td>
        <td>${isbn}</td>
        <td>
-           <button id="edit-btn">Edit</button>
-           <button id="delete-btn">Delete</button>
+           <button class="edit-btn">Edit</button>
+           <button class="delete-btn">Delete</button>
        </td>
    </tr>`
 
     return result;
 };
-
 
 htmlElements.loadBooksButton().addEventListener('click', loadBooks);
 htmlElements.submitButtonElement().addEventListener('click', addBook);
@@ -44,7 +42,63 @@ function loadBooks() {
                 let currentBookHTML = bookTemplate(obj);
                 htmlElements.tableBody().innerHTML += currentBookHTML;
             });
+
+            let editBtns = document.getElementsByClassName('edit-btn'); // return array of HTML elements
+            Object.values(editBtns).forEach(x => {
+                x.addEventListener('click', editBook);
+            });
+
+            let deleteBtns = document.getElementsByClassName('delete-btn');
+            Object.values(deleteBtns).forEach(x => {
+                x.addEventListener('click', deleteBook);
+            });
         });
+};
+
+function editBook(e) {
+    e.preventDefault()
+    let keyOfBookToEdit = e.target.parentElement.parentElement.getAttribute('data-key');
+
+    fetch(baseURL + keyOfBookToEdit + '.json')
+        .then(response => response.json())
+        .then(data => {
+            htmlElements.editTitleElement().value = data.title;
+            htmlElements.editAuthorElement().value = data.author;
+            htmlElements.editIsbnElement().value = data.isbn;
+            htmlElements.editForm().style.display = 'block';
+
+            htmlElements.submitEditedBookBtn().setAttribute('data-key', keyOfBookToEdit);
+            htmlElements.submitEditedBookBtn().addEventListener('click', submitEditedBook);
+
+
+        });
+    function submitEditedBook(e) {
+        e.preventDefault();
+        let obj = {
+            title: htmlElements.editTitleElement().value,
+            author: htmlElements.editAuthorElement().value,
+            isbn: htmlElements.editIsbnElement().value,
+        };
+
+        htmlElements.editForm().style.display = 'none';
+
+        fetch(baseURL + keyOfBookToEdit + '.json', {
+            method: 'PATCH',
+            body: JSON.stringify(obj)
+        })
+        .then(htmlElements.tableBody().innerHTML = '')
+        .then(loadBooks);
+    }
+}
+
+function deleteBook(e) {
+    let keyBookToBeDeleted = e.target.parentElement.parentElement.getAttribute('data-key');
+  
+    fetch(baseURL + keyBookToBeDeleted + '.json', {
+        method: 'DELETE'
+    })
+    .then(htmlElements.tableBody().innerHTML = '')
+    .then(loadBooks);
 }
 
 function addBook(e) {
