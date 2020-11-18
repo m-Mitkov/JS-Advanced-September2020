@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="css/index.css">
+  <link rel="stylesheet" type="text/css" href="css/team.css">
+  <link rel="stylesheet" type="text/css" href="css/details.css">
+  <link rel="stylesheet" type="text/css" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+  <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-auth.js"></script>
+
+  <title>Team Managers App</title>
+</head>
+
+<body>
+  <div id="infoBox" class="notification" disabled></div>
+  <div id="errorBox" class="notification" disabled></div>
+
+  <div id="main">
+
+  </div>
+
+
+  <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyD8eaZrDnxA-9TdKT5RYkFHar9YMfkluNg",
+      authDomain: "movies-efe9b.firebaseapp.com",
+      databaseURL: "https://movies-efe9b.firebaseio.com",
+      projectId: "movies-efe9b",
+      storageBucket: "movies-efe9b.appspot.com",
+      messagingSenderId: "46410061114",
+      appId: "1:46410061114:web:0ad5dfc4c42fb571f82c03"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <script src="node_modules/jquery/dist/jquery.min.js"></script>
+  <!--same level folder(i dont have to go one directory up to have acces to node modules-->
+  <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+
+  <script src="node_modules/handlebars/dist/handlebars.js"></script>
+  <script src="node_modules/sammy/lib/sammy.js"></script>
+  <script src="node_modules/sammy/lib/plugins/sammy.handlebars.js"></script>
+  <script src="../scripts/app.js"></script>
+
+</body>
+
+</html>
