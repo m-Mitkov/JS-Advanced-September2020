@@ -1,4 +1,7 @@
 const auth = firebase.auth();
+const baseURLforTeams = `https://movies-efe9b.firebaseio.com/`;
+//var database = firebase.database();
+
 
 const router = Sammy('#main', function () {
 
@@ -11,29 +14,20 @@ const router = Sammy('#main', function () {
     // variable the name can be whatever i want )
 
     this.get('/home', function (context) {
-       
-        let currentUser = localStorage.getItem('currentUser');
-        if (currentUser) {
-            const { uid, email } = JSON.parse(currentUser);
-            context.loggedIn = true;
-            context.email = email;
-        }
+        verifyUser(context);
 
-        loadPartials(context)
+        this.loadPartials({
+            'header': './templates/common/header.hbs',
+            'footer': './templates/common/footer.hbs',
+        })
             .then(function () {
                 this.partial('./templates/home/home.hbs');
             })
             .catch(e => console.log(e));
     });
 
-    this.get('/login', function () {
-
-        let currentUser = localStorage.getItem('currentUser');
-        if (currentUser) {
-            const { uid, email } = JSON.parse(currentUser);
-            context.loggedIn = true;
-            context.email = email;
-        }
+    this.get('/login', function (context) {
+        verifyUser(context);
 
         this.loadPartials({
             'header': './templates/common/header.hbs',
@@ -61,7 +55,8 @@ const router = Sammy('#main', function () {
             .catch(e => console.log(e));
     })
 
-    this.get('/about', function () {
+    this.get('/about', function (context) {
+        verifyUser(context);
 
         this.loadPartials({
             'header': './templates/common/header.hbs',
@@ -88,19 +83,47 @@ const router = Sammy('#main', function () {
     });
 
     this.post('/login', function (context) {
-        let { username, password } = context.params;
+        let { email, password } = context.params;
 
         try {
-            auth.signInWithEmailAndPassword(username, password)
+            auth.signInWithEmailAndPassword(email, password)
                 .then(currentUser => {
-                    let {email, uid} = currentUser.user;
-                   localStorage.setItem('currentUser', JSON.stringify({email, uid}));
-                   this.redirect('/home');
+                    let { email, uid } = currentUser.user;
+                    localStorage.setItem('currentUser', JSON.stringify({ email, uid }));
+                    this.redirect('/home');
                 });
         } catch (e) {
             console.log(e)
-        }
-    })
+        };
+    });
+
+    this.get('/logout', function (context) {
+        auth.signOut()
+            .then(res => {
+                console.log(res);
+                localStorage.removeItem('currentUser');
+                this.redirect('/home');
+            })
+            .catch(e => console.log(e));
+    });
+
+    this.get('/catalog', function (context) {
+        verifyUser(context);
+        console.log(context);
+        
+        this.loadPartials({
+            'header': './templates/common/header.hbs',
+            'footer': './templates/common/footer.hbs',
+            'team': './templates/catalog/team.hbs',
+        })
+            .then(function () {
+                console.log('bbb');
+                this.partial('./templates/catalog/teamCatalog.hbs');
+                console.log('ccc');
+            })
+            .catch(e => console.log(e));
+    });
+
 });
 
 (() => {
@@ -113,3 +136,14 @@ function loadPartials(context) {
         'footer': './templates/common/footer.hbs'
     });
 };
+
+async function verifyUser(context) {
+
+    let currentUser = await localStorage.getItem('currentUser');
+
+    if (currentUser) {
+        const { email, uid } = JSON.parse(currentUser);
+        context.loggedIn = true;
+        context.email = email;
+    }
+}
