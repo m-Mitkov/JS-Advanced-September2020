@@ -8,8 +8,7 @@
   <link rel="stylesheet" type="text/css" href="css/team.css">
   <link rel="stylesheet" type="text/css" href="css/details.css">
   <link rel="stylesheet" type="text/css" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
-  <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-auth.js"></script>
+
 
   <title>Team Managers App</title>
 </head>
@@ -17,25 +16,28 @@
 <body>
   <div id="infoBox" class="notification" disabled></div>
   <div id="errorBox" class="notification" disabled></div>
-  
+  <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-app.js"></script>
+
   <div id="main">
 
   </div>
 
-<script>
-  // Your web app's Firebase configuration
-  var firebaseConfig = {
-    apiKey: "AIzaSyAICb-oc22AOC2hkXdoJC_B3IqpCAdv0HQ",
-    authDomain: "team-manager-ab0f5.firebaseapp.com",
-    databaseURL: "https://team-manager-ab0f5.firebaseio.com",
-    projectId: "team-manager-ab0f5",
-    storageBucket: "team-manager-ab0f5.appspot.com",
-    messagingSenderId: "273156612688",
-    appId: "1:273156612688:web:d2d2bbb00f2e294fa62755"
-  };
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-</script>
+  <script>
+    // Your web app's Firebase configuration
+    var firebaseConfig = {
+      apiKey: "AIzaSyAICb-oc22AOC2hkXdoJC_B3IqpCAdv0HQ",
+      authDomain: "team-manager-ab0f5.firebaseapp.com",
+      databaseURL: "https://team-manager-ab0f5.firebaseio.com",
+      projectId: "team-manager-ab0f5",
+      storageBucket: "team-manager-ab0f5.appspot.com",
+      messagingSenderId: "273156612688",
+      appId: "1:273156612688:web:d2d2bbb00f2e294fa62755"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-auth.js"></script>
 
   <script src="node_modules/jquery/dist/jquery.min.js"></script>
   <!--same level folder(i dont have to go one directory up to have acces to node modules-->

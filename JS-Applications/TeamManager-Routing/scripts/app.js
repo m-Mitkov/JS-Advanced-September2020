@@ -1,21 +1,18 @@
 const auth = firebase.auth();
-const baseURLforTeams = `https://movies-efe9b.firebaseio.com/`;
+const baseURLforTeams = `https://team-manager-ab0f5.firebaseio.com/`;
 //var database = firebase.database();
-
 
 const router = Sammy('#main', function () {
 
     this.use('Handlebars', 'hbs');
     // this.use('Handlebars', 'hbs');  // let Sammy know how to use the .hbs extensions files
 
-
-    // all the partials inside hbs => diff 'variables' and i can get each of them 
+    // all the partials inside hbs => diff 'variables' and i can get each of them
     // with context.loginForm (EX) it will give me the loginForm from loginPage (context is a random
     // variable the name can be whatever i want )
 
     this.get('/home', function (context) {
         verifyUser(context);
-
         this.loadPartials({
             'header': './templates/common/header.hbs',
             'footer': './templates/common/footer.hbs',
@@ -23,7 +20,7 @@ const router = Sammy('#main', function () {
             .then(function () {
                 this.partial('./templates/home/home.hbs');
             })
-            .catch(e => console.log(e));
+           .catch(e => errorHandler(e));
     });
 
     this.get('/login', function (context) {
@@ -37,7 +34,7 @@ const router = Sammy('#main', function () {
             .then(function () {
                 this.partial('./templates/login/loginPage.hbs');
             })
-            .catch(e => console.log(e));
+            .catch(e => errorHandler(e));
 
 
     });
@@ -52,7 +49,7 @@ const router = Sammy('#main', function () {
             .then(function () {
                 this.partial('./templates/register/registerPage.hbs');
             })
-            .catch(e => console.log(e));
+            .catch(e => errorHandler(e));
     })
 
     this.get('/about', function (context) {
@@ -65,21 +62,23 @@ const router = Sammy('#main', function () {
             .then(function () {
                 this.partial('./templates/about/about.hbs');
             })
-            .catch(e => console.log(e));
+            .catch(e => errorHandler(e));
     });
 
     this.post('/register', function (context) {
+
+        context.hasNoTeam = true;
         let { username, password, repeatPassword } = context.params // context is an obj with many properties one of which is 'params'
 
         if (password !== repeatPassword) {
-            return; // add error handler 
+            return; // add error handler
         }
 
         auth.createUserWithEmailAndPassword(username, password)
             .then(user => {
                 this.redirect('/login');
             })
-            .catch(e => console.log(e));
+            .catch(e => errorHandler(e));
     });
 
     this.post('/login', function (context) {
@@ -108,20 +107,53 @@ const router = Sammy('#main', function () {
     });
 
     this.get('/catalog', function (context) {
+        console.log(context.hasNoTeam);
         verifyUser(context);
-        console.log(context);
-        
+       let teams = [];
+        getAllTeams()
+       .then(x => teams.push(x));
+        /// register partial teams for each team to show in catalog
+       console.log(teams);
+
         this.loadPartials({
             'header': './templates/common/header.hbs',
             'footer': './templates/common/footer.hbs',
             'team': './templates/catalog/team.hbs',
         })
             .then(function () {
-                console.log('bbb');
                 this.partial('./templates/catalog/teamCatalog.hbs');
-                console.log('ccc');
             })
-            .catch(e => console.log(e));
+            .catch(e => errorHandler(e));
+    });
+
+    this.get('/create-team', function(context) {
+
+        this.loadPartials({
+            'header': './templates/common/header.hbs',
+            'footer': './templates/common/footer.hbs',
+            'createForm': './templates/create/createForm.hbs',
+        })
+            .then(function () {
+                this.partial('./templates/create/createPage.hbs');
+            })
+            .catch(e => errorHandler(e));
+    });
+
+    this.post('/create-team', function(context) {
+        let {name, comment} = context.params;
+        console.log(JSON.parse(localStorage.getItem('currentUser')).uid);
+        const team = {
+            name,
+            comment,
+            'creator': JSON.parse(localStorage.getItem('currentUser')).uid,
+            'members': [],
+        };
+
+        fetch(baseURLforTeams + '.json', {
+            method: 'POST',
+            body: JSON.stringify(team),
+        })
+        .then(this.redirect('/catalog'));
     });
 
 });
@@ -138,7 +170,6 @@ function loadPartials(context) {
 };
 
 async function verifyUser(context) {
-
     let currentUser = await localStorage.getItem('currentUser');
 
     if (currentUser) {
@@ -146,4 +177,17 @@ async function verifyUser(context) {
         context.loggedIn = true;
         context.email = email;
     }
+}
+
+function getAllTeams(){
+    //let teams = [];
+    return fetch(baseURLforTeams + '.json', {
+        method: 'GET',
+    })
+    .then(res => res.json())
+    .catch(e => errorHandler(e));
+}
+
+function errorHandler(e){
+    return console.log(e);
 }
