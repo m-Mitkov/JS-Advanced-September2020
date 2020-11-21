@@ -1,9 +1,12 @@
+{{> header}}
+
+    {{#if isLogedIn}}
 <div class="shoes">
     {{#each shoes}}
-    <div class="shoe">
-        <img src="https://i1.t4s.cz/products/ar4149-001/nike-air-zoom-pegasus-36-gs-251390-ar4149-001.jpeg">
-        <h3>Nike Pegasus</h3>
-        <a>Buy it for $72,90</a>
+    <div class="shoe" id="{{id}}">
+        <img src="{{image}}">
+        <h3>{{name}}</h3>
+        <a href="/description">Buy it for ${{price}}</a>
     </div>
     {{/each}}
     {{!-- <div class="shoe">
@@ -27,5 +30,10 @@
             src="https://d1zkmbbkp46fmz.cloudfront.net/dbzh4XEt8gAeDWA8NmRQVkbja9Y=/fit-in/700x700/9/6/8/c/968c97afa73e54a7b1d4fcdc2caf4bc15e161e34_Asics_Gel_Lyte_V_Mantle_Green_White_1191A267_300_1.jpg">
         <h3>Asics Gel-Quantum</h3>
         <a>Buy it for $140,00</a>
-    </div> --}}
-</div>
+    </div>
+</div> --}}
+{{else}}
+<h1>To see our catalog, please first <a href="/login">Log in</a></h1>
+{{/if}}
+
+{{> footer}}
