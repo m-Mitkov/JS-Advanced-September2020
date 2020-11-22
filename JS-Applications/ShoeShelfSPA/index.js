@@ -89,6 +89,7 @@ const app = Sammy('#root', function () {
 
     this.post('/createOffer', function (context) {
         let { name, price, image, description, brand } = context.params;
+
         let obj = {
             name, price, image, description, brand,
             'owner': JSON.parse(getLoggedUser()).uid,
@@ -132,12 +133,13 @@ const app = Sammy('#root', function () {
         }
 
         let { id } = context.params;
-
+        context.id = id;
+        console.log(context);
         getShoeByID(id)
             .then(data => {
 
                 customLoadPartials(context)
-                    .then(function () {
+                    .then(function () {         // found out: window.location.pathname !!!
                                         // HOW DO I KEEP THE ID FROM SHOECATALOG, I NEED IT IN DESCRIPTION FOR BUY AND OTHER BUTTONS
                         let isUserTheOwner;
                         isUserTheOwnerOfTheShoes(id)
@@ -153,10 +155,28 @@ const app = Sammy('#root', function () {
             });
     });
 
-    this.get('/buy/:id', function(context) {
-        let userCart = JSON.parse(getLoggedUser()).uplodedShoesForSale;
-        console.log(context);
-    })
+    this.get('/edit/:id', function(context) {
+        let id = window.location.pathname.split('/').pop();
+
+        let email;
+        if (validateUserIsLoggedIn(context)) {
+            email = JSON.parse(getLoggedUser()).email; 
+        }
+
+        fetch(baseURL + `${id}` + '/.json')
+        .then(res => res.json())
+        .then(data => {
+
+            customLoadPartials(context)
+                .then(function () {
+                    this.partial('/templates/editOffer.hbs', 
+                    {'name': data.name, 'price': data.price, 'image': data.image,
+                     'description': data.description, 'brand': data.brand, 'email': email }); 
+                });
+        });
+    });
+
+        DO NEXT PATCH  REQUEST FROM EDIT FORM!!!
 
 }); // main sammy brackets
 
