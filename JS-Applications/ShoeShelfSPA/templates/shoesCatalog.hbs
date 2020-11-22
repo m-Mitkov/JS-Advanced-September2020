@@ -3,10 +3,10 @@
     {{#if isLogedIn}}
 <div class="shoes">
     {{#each shoes}}
-    <div class="shoe" id="{{id}}">
+    <div class="shoe">
         <img src="{{image}}">
         <h3>{{name}}</h3>
-        <a href="/description">Buy it for ${{price}}</a>
+        <a href="/description/{{id}}">Buy it for ${{price}}</a>
     </div>
     {{/each}}
     {{!-- <div class="shoe">

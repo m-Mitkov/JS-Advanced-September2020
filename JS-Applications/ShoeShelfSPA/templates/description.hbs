@@ -1,8 +1,9 @@
+{{> header}}
+
 <div class="offer-details">
     <h1>{{name}}</h1>
     <div class="info">
-        <img src="{{image}}"
-            alt="">
+        <img src="{{image}}" alt="">
         <div class="description">{{description}}
             <br>
             <br>
@@ -10,11 +11,16 @@
         </div>
     </div>
     <div class="actions">
+        {{#if isUserTheOwner}}
         <a href="/edit">Edit</a>
         <a href="/delete">Delete</a>
-        <a href="/buy">Buy</a>
+        {{else}}
+        <a href="/buy/{{id}}">Buy</a>
+        {{/if}}
         {{#if shoesBought}}
         <span>You bought it</span>
         {{/if}}
     </div>
 </div>
+
+{{> footer}}

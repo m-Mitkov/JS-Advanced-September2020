@@ -1,4 +1,7 @@
+//const { data } = require("jquery");
+
 const auth = firebase.auth();
+const baseURL = 'https://shoe-shelf-1135f.firebaseio.com/';
 
 const app = Sammy('#root', function () {
     this.use('Handlebars', 'hbs');
@@ -6,7 +9,7 @@ const app = Sammy('#root', function () {
     this.get('/homePage', function (context) {
         let email;
         if (validateUserIsLoggedIn(context)) {
-            email = JSON.parse(getLoggedUser()).email; // problem hitted: how to remove 'Regiser now' btn on loged user???
+            email = JSON.parse(getLoggedUser()).email; // problem hit: how to remove 'Regiser now' btn on loged user???
         }
 
         customLoadPartials(context)
@@ -29,7 +32,7 @@ const app = Sammy('#root', function () {
 
         let validateEmails = validateEmail(email);
         let validatePasswords = validatePassword(password);
-        let verifyInputParamsAreEquals = verifyInputParamsAreEqual(password, repeatPassword)
+        let verifyInputParamsAreEquals = verifyInputParamsAreEqual(password, repeatPassword);
 
         if (validateEmails && validatePasswords && verifyInputParamsAreEquals) {
             auth.createUserWithEmailAndPassword(email, password)
@@ -91,21 +94,21 @@ const app = Sammy('#root', function () {
             'owner': JSON.parse(getLoggedUser()).uid,
         };
 
-        fetch('https://shoe-shelf-1135f.firebaseio.com/.json', {
+        fetch(`${baseURL}.json`, {
             method: 'POST',
             body: JSON.stringify(obj),
         })
             .then(res => {
                 this.redirect('/shoesCatalog');
             });
-        //manipulateLocaleStorage(obj);// get/remove/setItem do change local storage !!!
-
-        // const currentUser = getLoggedUser().uplodedShoesForSale.push;
     });
 
-
     this.get('/shoesCatalog', function (context) {
-        validateUserIsLoggedIn(context);
+        let email;
+        if (validateUserIsLoggedIn(context)) {
+            email = JSON.parse(getLoggedUser()).email; // problem hit: how to remove 'Regiser now' btn on loged user???
+        }
+
         context.offers = [];
 
         getAllShoes()
@@ -113,26 +116,56 @@ const app = Sammy('#root', function () {
                 Object.entries(shoes)
                     .forEach((key) => {
                         let id = key[0];
-                        context.offers.push({'id': id, ...key[1]});
-
+                        context.offers.push({ 'id': id, ...key[1] });
                         customLoadPartials(context)
                             .then(function () {
-                                this.partial('/templates/shoesCatalog.hbs', {'id': id, 'shoes': shoes});
+                                this.partial('/templates/shoesCatalog.hbs', { 'shoes': context.offers, 'email': email });
                             });
                     });
             });
-            console.log(context);
     });
 
+    this.get('/description/:id', function (context) {
+        let email;
+        if (validateUserIsLoggedIn(context)) {
+            email = JSON.parse(getLoggedUser()).email; 
+        }
 
-});
+        let { id } = context.params;
+
+        getShoeByID(id)
+            .then(data => {
+
+                customLoadPartials(context)
+                    .then(function () {
+                                        // HOW DO I KEEP THE ID FROM SHOECATALOG, I NEED IT IN DESCRIPTION FOR BUY AND OTHER BUTTONS
+                        let isUserTheOwner;
+                        isUserTheOwnerOfTheShoes(id)
+                            .then(result => {
+                                isUserTheOwner = result;
+                                console.log(data);
+                                this.partial('/templates/description.hbs', {
+                                    'name': data.name, 'image': data.image, 'email': email, 'id': data.id,
+                                    'description': data.description, 'price': data.price, 'isUserTheOwner': isUserTheOwner
+                                });
+                            });
+                    });
+            });
+    });
+
+    this.get('/buy/:id', function(context) {
+        let userCart = JSON.parse(getLoggedUser()).uplodedShoesForSale;
+        console.log(context);
+    })
+
+}); // main sammy brackets
 
 (() => {
     app.run('/homePage');
 })();
 
 function getLoggedUser() {
-    return window.localStorage['user'];
+    return window.localStorage['user']; // you should had it JSON.parse/d so it is easy to work with
 }
 
 function validateUserIsLoggedIn(context) {
@@ -151,7 +184,7 @@ function verifyInputParamsAreEqual(param1, param2) {
 }
 
 function validateEmail(email) {
-    return !email ? true : false;
+    return email ? true : false;
 }
 
 function validatePassword(password) {
@@ -159,10 +192,25 @@ function validatePassword(password) {
 }
 
 function getAllShoes() {
-    return fetch('https://shoe-shelf-1135f.firebaseio.com/.json')  // return {key: {obj}} object entries
+    return fetch(`${baseURL}.json`)  // return {key: {obj}} object entries
         .then(response => response.json());
 }
 
+async function getShoeByID(id) {
+    return await fetch(`${baseURL}/${id}/.json`)
+        .then(response => response.json());
+}
+
+async function isUserTheOwnerOfTheShoes(id) {
+    let userID = JSON.parse(getLoggedUser()).uid;
+    let owner;
+
+    await getShoeByID(id)
+        .then(data => {
+            owner = data.owner;
+        });
+    return userID === owner ? true : false;
+}
 // function manipulateLocaleStorage(obj) {
 //     let currentUser = JSON.parse(getLoggedUser());
 //     console.log(currentUser);
