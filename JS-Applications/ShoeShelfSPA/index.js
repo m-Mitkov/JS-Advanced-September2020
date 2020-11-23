@@ -1,5 +1,6 @@
 //const { data } = require("jquery");
 
+
 const auth = firebase.auth();
 const baseURL = 'https://shoe-shelf-1135f.firebaseio.com/';
 
@@ -65,7 +66,7 @@ const app = Sammy('#root', function () {
 
                 window.localStorage.setItem('user', JSON.stringify(currentUser));
                 validateUserIsLoggedIn(context);
-                this.redirect('/homePage');
+                this.redirect('/shoesCatalog');
             });
     });
 
@@ -89,12 +90,10 @@ const app = Sammy('#root', function () {
 
     this.post('/createOffer', function (context) {
         let { name, price, image, description, brand } = context.params;
-
         let obj = {
-            name, price, image, description, brand,
+            name, price, image, description, brand, 'clients': [],
             'owner': JSON.parse(getLoggedUser()).uid,
         };
-
         fetch(`${baseURL}.json`, {
             method: 'POST',
             body: JSON.stringify(obj),
@@ -107,7 +106,7 @@ const app = Sammy('#root', function () {
     this.get('/shoesCatalog', function (context) {
         let email;
         if (validateUserIsLoggedIn(context)) {
-            email = JSON.parse(getLoggedUser()).email; // problem hit: how to remove 'Regiser now' btn on loged user???
+            email = JSON.parse(getLoggedUser()).email;
         }
 
         context.offers = [];
@@ -129,55 +128,74 @@ const app = Sammy('#root', function () {
     this.get('/description/:id', function (context) {
         let email;
         if (validateUserIsLoggedIn(context)) {
-            email = JSON.parse(getLoggedUser()).email; 
+            email = JSON.parse(getLoggedUser()).email;
         }
 
         let { id } = context.params;
-        context.id = id;
-        console.log(context);
         getShoeByID(id)
             .then(data => {
 
-                customLoadPartials(context)
+                return customLoadPartials(context)
                     .then(function () {         // found out: window.location.pathname !!!
-                                        // HOW DO I KEEP THE ID FROM SHOECATALOG, I NEED IT IN DESCRIPTION FOR BUY AND OTHER BUTTONS
+                        // HOW DO I KEEP THE ID FROM SHOECATALOG, I NEED IT IN DESCRIPTION FOR BUY AND OTHER BUTTONS
                         let isUserTheOwner;
                         isUserTheOwnerOfTheShoes(id)
                             .then(result => {
                                 isUserTheOwner = result;
-                                console.log(data);
-                                this.partial('/templates/description.hbs', {
-                                    'name': data.name, 'image': data.image, 'email': email, 'id': data.id,
-                                    'description': data.description, 'price': data.price, 'isUserTheOwner': isUserTheOwner
-                                });
+                                this.partial('/templates/description.hbs',
+                                    { ...data, 'isUserTheOwner': isUserTheOwner, 'email': email, 'id': id });
                             });
                     });
             });
     });
 
-    this.get('/edit/:id', function(context) {
+    this.get('/edit/:id', function (context) {
         let id = window.location.pathname.split('/').pop();
 
         let email;
         if (validateUserIsLoggedIn(context)) {
-            email = JSON.parse(getLoggedUser()).email; 
+            email = JSON.parse(getLoggedUser()).email;
         }
 
         fetch(baseURL + `${id}` + '/.json')
-        .then(res => res.json())
-        .then(data => {
+            .then(res => res.json())
+            .then(data => {
 
-            customLoadPartials(context)
-                .then(function () {
-                    this.partial('/templates/editOffer.hbs', 
-                    {'name': data.name, 'price': data.price, 'image': data.image,
-                     'description': data.description, 'brand': data.brand, 'email': email }); 
-                });
-        });
+                customLoadPartials(context)
+                    .then(function () {
+                        this.partial('/templates/editOffer.hbs',
+                            { ...data, 'id': id, 'email': email });
+                    });
+            });
     });
 
-        DO NEXT PATCH  REQUEST FROM EDIT FORM!!!
+    this.put('/edit/:id', function (context) { // could not find patch request
+        const id = context.params.id;
+        let updatedShoes = { ...context.params }
 
+        getShoeByID(id)
+            .then(shoe => {
+                fetch(baseURL + `${id}/` + '.json', {
+                    method: 'PUT',
+                    body: JSON.stringify(updatedShoes),
+                })
+                    .then(() => {
+                        this.redirect('/shoesCatalog');
+                    })
+            });
+    });
+
+    this.get('/delete/:id', function (context) {
+        let id = window.location.pathname.split('/').pop();
+
+        fetch(baseURL + `${id}/` + '.json', {
+            method: 'DELETE'
+        })
+            .then(x => {
+                this.redirect('/shoesCatalog');
+            });
+    });
+    // implement 'buy' logic on click
 }); // main sammy brackets
 
 (() => {

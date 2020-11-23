@@ -12,8 +12,8 @@
     </div>
     <div class="actions">
         {{#if isUserTheOwner}}
-        <a href="/edit/{{id}}" method="PATCH" data-id="{{id}}">Edit</a>
-        <a href="/delete" method="DELETE">Delete</a>
+        <a href="/edit/{{id}}" method="PUT" >Edit</a>
+        <a href="/delete/{{id}}" method="DELETE">Delete</a>
         {{else}}
         <a href="/buy/{{id}}">Buy</a>
         {{/if}}
