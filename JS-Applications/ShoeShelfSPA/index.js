@@ -9,13 +9,14 @@ const app = Sammy('#root', function () {
 
     this.get('/homePage', function (context) {
         let email;
-        if (validateUserIsLoggedIn(context)) {
+        let isLogedIn = validateUserIsLoggedIn(context)
+        if (isLogedIn) {
             email = JSON.parse(getLoggedUser()).email; // problem hit: how to remove 'Regiser now' btn on loged user???
         }
 
         customLoadPartials(context)
             .then(function () {
-                this.partial('/templates/homePage.hbs', { 'email': email }); // 2-nd param is the 'email template' in header
+                this.partial('/templates/homePage.hbs', { 'email': email, 'isLogedIn': isLogedIn }); // 2-nd param is the 'email template' in header
             });
     });
 
@@ -90,8 +91,9 @@ const app = Sammy('#root', function () {
 
     this.post('/createOffer', function (context) {
         let { name, price, image, description, brand } = context.params;
+        let peopleWhoBoughtIt = [JSON.parse(getLoggedUser()).uid];
         let obj = {
-            name, price, image, description, brand, 'clients': [],
+            name, price, image, description, brand, 'peopleWhoBoughtIt': peopleWhoBoughtIt,
             'owner': JSON.parse(getLoggedUser()).uid,
         };
         fetch(`${baseURL}.json`, {
@@ -125,13 +127,15 @@ const app = Sammy('#root', function () {
             });
     });
 
-    this.get('/description/:id', function (context) {
+    this.get('/description/:id', async function (context) {
         let email;
         if (validateUserIsLoggedIn(context)) {
             email = JSON.parse(getLoggedUser()).email;
         }
 
         let { id } = context.params;
+        let shoesBought = await areShoesBought(id);
+
         getShoeByID(id)
             .then(data => {
 
@@ -143,7 +147,7 @@ const app = Sammy('#root', function () {
                             .then(result => {
                                 isUserTheOwner = result;
                                 this.partial('/templates/description.hbs',
-                                    { ...data, 'isUserTheOwner': isUserTheOwner, 'email': email, 'id': id });
+                                    { ...data, 'isUserTheOwner': isUserTheOwner, 'email': email, 'id': id, 'shoesBought': shoesBought });
                             });
                     });
             });
@@ -160,7 +164,6 @@ const app = Sammy('#root', function () {
         fetch(baseURL + `${id}` + '/.json')
             .then(res => res.json())
             .then(data => {
-
                 customLoadPartials(context)
                     .then(function () {
                         this.partial('/templates/editOffer.hbs',
@@ -171,13 +174,18 @@ const app = Sammy('#root', function () {
 
     this.put('/edit/:id', function (context) { // could not find patch request
         const id = context.params.id;
-        let updatedShoes = { ...context.params }
-
+       
         getShoeByID(id)
             .then(shoe => {
+                let peopleWhoBoughtIt = shoe.peopleWhoBoughtIt;
+                let obj = {
+                    ... context.params,
+                    'peopleWhoBoughtIt': peopleWhoBoughtIt
+                };
+
                 fetch(baseURL + `${id}/` + '.json', {
                     method: 'PUT',
-                    body: JSON.stringify(updatedShoes),
+                    body: JSON.stringify(obj),
                 })
                     .then(() => {
                         this.redirect('/shoesCatalog');
@@ -195,12 +203,50 @@ const app = Sammy('#root', function () {
                 this.redirect('/shoesCatalog');
             });
     });
-    // implement 'buy' logic on click
+    
+    this.get('/buy/:id', function(context) {
+        const {id} = context.params;
+
+       getShoeByID(id)
+       .then(data => {
+           let peopleWhoBoughtIt = data.peopleWhoBoughtIt;
+           peopleWhoBoughtIt.push(JSON.parse(getLoggedUser()).uid);
+
+           fetch(baseURL + `${id}/` + '.json', {
+               method: 'PUT',
+               body: JSON.stringify({...data})
+           })
+           .then(x => {
+            this.redirect(`/shoesCatalog`);
+           });
+        //    
+       });
+
+    });
+
 }); // main sammy brackets
 
 (() => {
     app.run('/homePage');
 })();
+
+ async function areShoesBought(shoesId){
+  
+      let areBought = await getShoeByID(shoesId)
+      .then(x => {
+          return x.peopleWhoBoughtIt;
+      });
+      let userID = JSON.parse(await getLoggedUser()).uid;
+    
+        if(areBought.includes(userID)){
+            console.log('yes');
+            return true;
+        } else{
+            console.log('false');
+            return false;
+        };
+  
+}
 
 function getLoggedUser() {
     return window.localStorage['user']; // you should had it JSON.parse/d so it is easy to work with
