@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Application 2020</title>
+    <link rel="icon" type="image/png" href="../static/favicon.ico">
+    <link href="../static/css/site.css" type="text/css" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-auth.js"></script>
+
+</head>
+
+
+
+<body id="root">
+   
+    <div class="container" id="container">
+        <p>Hello world!</p>
+        <section class="notifications" style="display: none;">
+            <p class="notification-message" id="errorBox">Message...</p>
+        </section>
+        <section class="notifications" style="display: none;background-color:rgba(1, 131, 29, 0.541);">
+            <p class="notification-message" id="successBox">Message...</p>
+        </section>
+    </div>
+    
+    <script>
+        // Your web app's Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyBk3OAeFXhTl_IgRbVjASMkRHUQLw-b-KE",
+            authDomain: "movies-catalog-ab7f7.firebaseapp.com",
+            databaseURL: "https://movies-catalog-ab7f7.firebaseio.com",
+            projectId: "movies-catalog-ab7f7",
+            storageBucket: "movies-catalog-ab7f7.appspot.com",
+            messagingSenderId: "1078011171476",
+            appId: "1:1078011171476:web:2505c03e81f7bd20b6da81"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+    </script>
+
+</body>
+<script src="node_modules/jquery/dist/jquery.js"></script>
+<script src="node_modules/bootstrap/dist/js/bootstrap.js"></script>
+<script src="node_modules/handlebars/dist/handlebars.js"></script>
+<script src="node_modules/sammy/lib/sammy.js"></script>
+<script src="node_modules/sammy/lib/plugins/sammy.handlebars.js"></script>
+<script src="index.js"></script>
+
+</html>
