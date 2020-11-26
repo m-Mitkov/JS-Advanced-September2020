@@ -1,5 +1,7 @@
 const auth = firebase.auth();
 const baseUrl = 'https://movies-catalog-ab7f7.firebaseio.com/';
+const errorNotify = document.getElementById('errorBox');
+const successNotify = document.getElementById('successBox');
 
 const app = Sammy('#root', function () {
     this.use('Handlebars', 'hbs');
@@ -13,7 +15,6 @@ const app = Sammy('#root', function () {
     });
 
     this.get('/register', function (context) {
-
         loadCommonPartials(context)
             .then(function () {
                 this.partial('/templates/registerForm.hbs');
@@ -75,9 +76,8 @@ const app = Sammy('#root', function () {
         });
         loadCommonPartials(context)    //{ 'id': id, 'movie': context.movies }
             .then(function () {
-                let {email, userIsLogedIn } = validateUser()
-                this.partial('/templates/catalogPage.hbs', 
-                {'movie': [...context.movieArr], 'email': email, 'userIsLogedIn': userIsLogedIn}); // validateUser() missing
+                this.partial('/templates/catalogPage.hbs',
+                    { 'movie': [...context.movieArr], ...validateUser()}); 
             });
     });
 
@@ -90,8 +90,12 @@ const app = Sammy('#root', function () {
     });
 
     this.post('/addMovie', function (context) {
+        let userId = getLoggedUser().uid;
+        let peopleWhoLikeIt = [];
+        peopleWhoLikeIt.push(userId);
+        let likes = peopleWhoLikeIt.length;
 
-        let movie = { ...context.params }
+        let movie = { ...context.params, 'likes': likes, 'peopleWhoLikesIt': peopleWhoLikeIt}
 
         fetch(baseUrl + '.json', {
             method: 'POST',
@@ -102,12 +106,52 @@ const app = Sammy('#root', function () {
             });
     });
 
+    this.get('/details/:id', async function (context) {
+        let id = getIDbyPathName();
+        let currentUserID = getLoggedUser().uid;
+        let movie;
+
+        await getSingleMovie(id)
+            .then(mov => {
+                movie = {...mov}
+            });
+
+            loadCommonPartials(context)
+            .then(function() {
+              let {peopleWhoLikesIt} = movie;
+                let alredyLiked =  Boolean(peopleWhoLikesIt.includes(currentUserID));
+                console.log(alredyLiked);
+            
+                this.partial('/templates/details.hbs', {...movie, ...validateUser(), 
+                            'likes': peopleWhoLikesIt.length, 'id': id, 'alredyLiked': alredyLiked});
+            });
+    });
+
+    this.get('/like/:id', function(){
+        let id = getIDbyPathName();
+        console.log(id);
+        let currentUserID = getLoggedUser().uid;
+
+        getSingleMovie(id)
+        .then(res => {
+            let peopleWhoLikesIt = res.peopleWhoLikesIt;
+            let alredyLiked = Boolean(peopleWhoLikesIt.includes(currentUserID));
+
+            if (!alredyLiked) {
+                console.log('in');
+                peopleWhoLikesIt.push(currentUserID);
+
+                fetch(baseUrl + `${id}/` + '.json', {
+                    method: 'PATCH',
+                    body: JSON.stringify({'peopleWhoLikesIt': peopleWhoLikesIt})
+                });
+            };
+            console.log(res.peopleWhoLikesIt);
+        })
+    })
+    //like PATCH request add prop arr peopleWHoLikeIt, likes++
 });
 
-
-(() => {
-    app.run('/homePage')
-})();
 
 function loadCommonPartials(context) {
     return context.loadPartials({
@@ -116,44 +160,24 @@ function loadCommonPartials(context) {
     });
 }
 
-function validatePassword(param1, param2) {
-    if (param1 !== param2) {
-        // errorNotificationHandler('password shoud match each other');
-        return false;
-    } else {
-        return true;
-    }
-}
-
-function validateEmail(email) {
-    console.log(email.length);
-    if (email.length < 6) {
-        // errorNotificationHandler('the email must be at leats 6 symbols long');
-        return false;
-    } else {
-        return true;
-    }
-}
-
 function errorNotificationHandler(msg) {
-    let notificationForm = document.querySelector('#errorBox');
-
-    notificationForm.innerHTML = msg;
-    notificationForm.style.display = 'block';
+    errorNotify.innerHTML = msg;
+    console.log(errorNotify.innerHTML);
+    errorNotify.style.display = 'block';
 
     setTimeout(function () {
-        notificationForm.style.display = 'none';
+        errorNotify.style.display = 'none';
     }, 3000);
 }
 
 function successNotificationHandler(msg) {
-    let notificationForm = document.getElementById('successBox');
+    console.log(successNotify);
 
-    notificationForm.innerHTML = msg;
-    notificationForm.style.display = 'block';
+    successNotify.innerHTML = msg;
+    successNotify.style.display = 'block';
 
     setTimeout(function () {
-        notificationForm.style.display = 'none';
+        successNotify.style.display = 'none';
     }, 3000);
 }
 
@@ -165,21 +189,9 @@ function getLoggedUser() {
     return JSON.parse(localStorage.getItem('user'));
 }
 
-function validateUser() {
-    let isUserLogedIn = userIsLogedIn();
-    let emailLogedUser = getLoggedUser()?.email;
-
-    return {
-        'userIsLogedIn': isUserLogedIn,
-        'email': emailLogedUser
-    };
+function getIDbyPathName() {
+    return window.location.pathname.split('/').pop();
 }
-
-async function getAllMovies() {
-
-    return await fetch(baseUrl + '.json', {
-        method: 'GET'
-    })
-        .then(res => res.json());
-    // .then(data => console.log(data));
-}
+(() => {
+    app.run('/homePage')
+})();

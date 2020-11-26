@@ -10,22 +10,33 @@
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-auth.js"></script>
-
+    
 </head>
 
-
+            <div class="container" id="container">
+                <section class="notifications" style="display: block;">
+                    <p class="notification-message" id="errorBox" >Message...</p>
+                </section>
+            
+                <section class="notifications" style="display: none;background-color:rgba(1, 131, 29, 0.541);">
+                    <p class="notification-message" id="successBox">Message...</p>
+                </section>
+            </div>
 
 <body id="root">
-   
-    <div class="container" id="container">
-        <p>Hello world!</p>
-        <section class="notifications" style="display: none;">
+
+</body>
+    
+    <!-- <div class="container" id="container">
+        <section class="notifications" style="display: block;">
             <p class="notification-message" id="errorBox">Message...</p>
         </section>
+       
         <section class="notifications" style="display: none;background-color:rgba(1, 131, 29, 0.541);">
             <p class="notification-message" id="successBox">Message...</p>
         </section>
-    </div>
+    </div> -->
+
     
     <script>
         // Your web app's Firebase configuration
@@ -42,12 +53,16 @@
         firebase.initializeApp(firebaseConfig);
     </script>
 
-</body>
+
+
 <script src="node_modules/jquery/dist/jquery.js"></script>
 <script src="node_modules/bootstrap/dist/js/bootstrap.js"></script>
 <script src="node_modules/handlebars/dist/handlebars.js"></script>
 <script src="node_modules/sammy/lib/sammy.js"></script>
 <script src="node_modules/sammy/lib/plugins/sammy.handlebars.js"></script>
+
+<script src="DBhandler.js"></script>
+<script src="validationFunctions.js"></script>
 <script src="index.js"></script>
 
 </html>
