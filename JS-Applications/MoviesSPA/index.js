@@ -60,25 +60,37 @@ const app = Sammy('#root', function () {
     });
 
     this.get('/catalogPage', async function (context) {
+        let anyMovies;
         let movies = await getAllMovies()
             .then(movie => {
                 return movie;
             });
         context.movieArr = [];
 
-        Object.entries(movies).forEach(x => {
-            let id = x[0];
-            let obj = {
-                'id': id,
-                ...x[1]
-            };
-            context.movieArr.push(obj);
-        });
-        loadCommonPartials(context)    //{ 'id': id, 'movie': context.movies }
-            .then(function () {
-                this.partial('/templates/catalogPage.hbs',
-                    { 'movie': [...context.movieArr], ...validateUser()}); 
+        if (movies !== null) {
+            anyMovies = true;
+            Object.entries(movies).forEach(x => {
+                let id = x[0];
+                let obj = {
+                    'id': id,
+                    ...x[1]
+                };
+                context.movieArr.push(obj);
             });
+            loadCommonPartials(context)    //{ 'id': id, 'movie': context.movies }
+                .then(function () {
+                    this.partial('/templates/catalogPage.hbs',
+                        { 'movie': [...context.movieArr], ...validateUser(), 'anyMovies': anyMovies });
+                });
+        } else {
+            anyMovies = false;
+            loadCommonPartials(context)    //{ 'id': id, 'movie': context.movies }
+                .then(function () {
+                    this.partial('/templates/catalogPage.hbs',
+                        { ...validateUser(), 'anyMovies': anyMovies });
+                });
+        }
+
     });
 
     this.get('/addMovie', function (context) {
@@ -95,7 +107,7 @@ const app = Sammy('#root', function () {
         peopleWhoLikeIt.push(userId);
         let likes = peopleWhoLikeIt.length;
 
-        let movie = { ...context.params, 'likes': likes, 'peopleWhoLikesIt': peopleWhoLikeIt}
+        let movie = { ...context.params, 'likes': likes, 'peopleWhoLikesIt': peopleWhoLikeIt, 'owner': userId }
 
         fetch(baseUrl + '.json', {
             method: 'POST',
@@ -109,47 +121,57 @@ const app = Sammy('#root', function () {
     this.get('/details/:id', async function (context) {
         let id = getIDbyPathName();
         let currentUserID = getLoggedUser().uid;
+        let validateIsMovieMine = await isMovieMine(id);
+      
         let movie;
 
         await getSingleMovie(id)
             .then(mov => {
-                movie = {...mov}
+                movie = { ...mov }
             });
 
-            loadCommonPartials(context)
-            .then(function() {
-              let {peopleWhoLikesIt} = movie;
-                let alredyLiked =  Boolean(peopleWhoLikesIt.includes(currentUserID));
-                console.log(alredyLiked);
-            
-                this.partial('/templates/details.hbs', {...movie, ...validateUser(), 
-                            'likes': peopleWhoLikesIt.length, 'id': id, 'alredyLiked': alredyLiked});
+        loadCommonPartials(context)
+            .then(function () {
+                let { peopleWhoLikesIt } = movie;
+                let alredyLiked = Boolean(peopleWhoLikesIt.includes(currentUserID));
+
+                this.partial('/templates/details.hbs', {
+                    ...movie, ...validateUser(),
+                    'likes': peopleWhoLikesIt.length, 'id': id, 'alredyLiked': alredyLiked,
+                    'isMovieMine': validateIsMovieMine
+                });
             });
     });
 
-    this.get('/like/:id', function(){
+    this.get('/like/:id', function () {
         let id = getIDbyPathName();
-        console.log(id);
         let currentUserID = getLoggedUser().uid;
 
         getSingleMovie(id)
-        .then(res => {
-            let peopleWhoLikesIt = res.peopleWhoLikesIt;
-            let alredyLiked = Boolean(peopleWhoLikesIt.includes(currentUserID));
+            .then(res => {
+                let peopleWhoLikesIt = res.peopleWhoLikesIt;
+                let alredyLiked = Boolean(peopleWhoLikesIt.includes(currentUserID));
 
-            if (!alredyLiked) {
-                console.log('in');
-                peopleWhoLikesIt.push(currentUserID);
+                if (!alredyLiked) {
+                    peopleWhoLikesIt.push(currentUserID);
 
-                fetch(baseUrl + `${id}/` + '.json', {
-                    method: 'PATCH',
-                    body: JSON.stringify({'peopleWhoLikesIt': peopleWhoLikesIt})
-                });
-            };
-            console.log(res.peopleWhoLikesIt);
-        })
-    })
-    //like PATCH request add prop arr peopleWHoLikeIt, likes++
+                    fetch(baseUrl + `${id}/` + '.json', {
+                        method: 'PATCH',
+                        body: JSON.stringify({ 'peopleWhoLikesIt': peopleWhoLikesIt })
+                    });
+                    this.redirect(`details/${id}`); // how do i refresh info in the page after a like btn is clicked???
+                };
+            });
+    });
+
+    this.get('/delete/:id', async function() {
+        let id = getIDbyPathName();
+
+        await deleteMovie(id);
+        this.redirect('/catalogPage');
+    });
+
+    //TODO: edit btn + searchBar + notificationHandlers
 });
 
 

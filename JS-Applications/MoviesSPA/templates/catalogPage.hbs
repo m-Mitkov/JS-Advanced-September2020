@@ -1,7 +1,7 @@
 {{> header}}
 <h1 class="text-center">Movies</h1>
 <section>
-    <a href="addMovie" class="btn btn-warning ">Add Movie</a>
+    <a href="/addMovie" class="btn btn-warning ">Add Movie</a>
     <form class="search float-right">
         <label>Search: </label>
         <input type="text">
@@ -9,6 +9,7 @@
     </form>
 </section>
 
+{{#if anyMovies}}
 {{#each movie}}
 <div class="card mb-4">
     <img class="card-img-top" src="{{imageUrl}}"
@@ -22,6 +23,9 @@
 
 </div>
 {{/each}}
+{{else}}
+<p>There are no movies at this Moment, help us by uploading your favourite one </p>
+{{/if}}
 
 {{> footer}}
 
