@@ -26,7 +26,6 @@ const app = Sammy('#root', function () {
         if (validateEmail(email) && validatePassword(password, repeatPassword)) {
             auth.createUserWithEmailAndPassword(email, password)
                 .then(x => {
-                    console.log('redirect');
                     this.redirect('/login');
                 });
         };
@@ -122,7 +121,7 @@ const app = Sammy('#root', function () {
         let id = getIDbyPathName();
         let currentUserID = getLoggedUser().uid;
         let validateIsMovieMine = await isMovieMine(id);
-      
+
         let movie;
 
         await getSingleMovie(id)
@@ -164,13 +163,60 @@ const app = Sammy('#root', function () {
             });
     });
 
-    this.get('/delete/:id', async function() {
+    this.get('/delete/:id', async function () {
         let id = getIDbyPathName();
 
         await deleteMovie(id);
         this.redirect('/catalogPage');
     });
 
+    this.get('/edit/:id', async function (context) {
+        let id = getIDbyPathName();
+        let movie;
+
+        await getSingleMovie(id)
+            .then(mov => {
+                movie = { ...mov }
+            });
+
+
+        loadCommonPartials(context)
+            .then(function () {
+
+                this.partial('/templates/editForm.hbs', {
+                    ...movie, 'id': id, ...validateUser(),
+                });
+            });
+    });
+
+    this.put('/edit/:id', function (context) {
+        const id = getIDbyPathName();
+        let updateParams = { ...context.params };
+
+        editMovie(updateParams, id)
+            .then(x => {
+                this.redirect('/catalogPage');
+            });
+    });
+
+
+    this.get('/search', async function (context) {
+        const searchedMovieTitle = context.params.searchedMovie;
+        let movieFound;
+
+        await getAllMovies()
+            .then(data => {
+                Object.entries(data).forEach(key => {
+                    
+                    if (key[1].title == searchedMovieTitle) {
+                        movieFound = key[0];
+                        return  ;
+                    };
+                });
+            });
+
+            this.redirect(`/details/${movieFound}`)
+    })
     //TODO: edit btn + searchBar + notificationHandlers
 });
 
@@ -214,6 +260,7 @@ function getLoggedUser() {
 function getIDbyPathName() {
     return window.location.pathname.split('/').pop();
 }
+
 (() => {
     app.run('/homePage')
 })();
