@@ -1,7 +1,6 @@
 const auth = firebase.auth();
 const baseUrl = 'https://movies-catalog-ab7f7.firebaseio.com/';
-const errorNotify = document.getElementById('errorBox');
-const successNotify = document.getElementById('successBox');
+const rootElement = document.getElementById('root');
 
 const app = Sammy('#root', function () {
     this.use('Handlebars', 'hbs');
@@ -17,12 +16,17 @@ const app = Sammy('#root', function () {
     this.get('/register', function (context) {
         loadCommonPartials(context)
             .then(function () {
+                this.loadPartials({
+                    'errorNotify': '/templates/notificationHandler/errorNotify.hbs',
+                    'successNotify': '/templates/notificationHandler/successNotify.hbs',
+                });
                 this.partial('/templates/registerForm.hbs');
             });
     });
 
     this.post('/register', function (context) {
         let { email, password, repeatPassword } = context.params;
+
         if (validateEmail(email) && validatePassword(password, repeatPassword)) {
             auth.createUserWithEmailAndPassword(email, password)
                 .then(x => {
@@ -35,6 +39,10 @@ const app = Sammy('#root', function () {
 
         loadCommonPartials(context)
             .then(function () {
+                this.loadPartials({
+                    'errorNotify': '/templates/notificationHandler/errorNotify.hbs',
+                    'successNotify': '/templates/notificationHandler/successNotify.hbs',
+                });
                 this.partial('/templates/loginForm.hbs');
             });
     });
@@ -47,6 +55,10 @@ const app = Sammy('#root', function () {
                 let { email, uid } = res.user;
                 window.localStorage.setItem('user', JSON.stringify({ 'email': email, 'uid': uid }));
                 this.redirect('/homePage');
+                successNotificationHandler('Successfully loged in');
+            })
+            .catch(err => {
+                errorNotificationHandler('Incorect email or password');
             });
     });
 
@@ -199,7 +211,6 @@ const app = Sammy('#root', function () {
             });
     });
 
-
     this.get('/search', async function (context) {
         const searchedMovieTitle = context.params.searchedMovie;
         let movieFound;
@@ -207,15 +218,15 @@ const app = Sammy('#root', function () {
         await getAllMovies()
             .then(data => {
                 Object.entries(data).forEach(key => {
-                    
+
                     if (key[1].title == searchedMovieTitle) {
                         movieFound = key[0];
-                        return  ;
+                        return;
                     };
                 });
             });
 
-            this.redirect(`/details/${movieFound}`)
+        this.redirect(`/details/${movieFound}`)
     })
     //TODO: edit btn + searchBar + notificationHandlers
 });
@@ -226,27 +237,6 @@ function loadCommonPartials(context) {
         'header': 'templates/header.hbs',
         'footer': 'templates/footer.hbs'
     });
-}
-
-function errorNotificationHandler(msg) {
-    errorNotify.innerHTML = msg;
-    console.log(errorNotify.innerHTML);
-    errorNotify.style.display = 'block';
-
-    setTimeout(function () {
-        errorNotify.style.display = 'none';
-    }, 3000);
-}
-
-function successNotificationHandler(msg) {
-    console.log(successNotify);
-
-    successNotify.innerHTML = msg;
-    successNotify.style.display = 'block';
-
-    setTimeout(function () {
-        successNotify.style.display = 'none';
-    }, 3000);
 }
 
 function userIsLogedIn() {
