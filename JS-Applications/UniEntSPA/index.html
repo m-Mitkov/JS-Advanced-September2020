@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>UniEnt</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.css" />
+  <link rel="stylesheet" href="./styles/styles.css" />
+  <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-auth.js"></script>
+
+</head>
+
+<body id="root">
+
+  <script>
+    // Your web app's Firebase configuration
+    var firebaseConfig = {
+      apiKey: "AIzaSyCDpEFv9xow1Q2AVZNRPFco7w-Grb2K3p8",
+      authDomain: "unient-cc151.firebaseapp.com",
+      databaseURL: "https://unient-cc151.firebaseio.com",
+      projectId: "unient-cc151",
+      storageBucket: "unient-cc151.appspot.com",
+      messagingSenderId: "8248035080",
+      appId: "1:8248035080:web:06625c6216b350c45f4ebd"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+</body>
+
+<!-- Libraries -->
+<script src="./node_modules/jquery/dist/jquery.js"></script>
+<script src="./node_modules/bootstrap/dist/js/bootstrap.js"></script>
+<script src="node_modules/handlebars/dist/handlebars.js"></script>
+<script src="node_modules/sammy/lib/sammy.js"></script>
+<script src="node_modules/sammy/lib/plugins/sammy.handlebars.js"></script>
+
+<script src="verificationsHandler.js"></script>
+<script src="index.js"></script>
+
+</html>
