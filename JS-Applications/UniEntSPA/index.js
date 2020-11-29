@@ -1,18 +1,34 @@
+
 const auth = firebase.auth();
 
 let app = Sammy('#root', function () {
     this.use('Handlebars', 'hbs')
 
-    this.get('/homePage', function (context) {
+    this.get('/homePage', async function (context) {
+        let events; 
+        await getAllEvents()
+        .then(e => {
+            events = {...e};
+        });
+
+        let hasEvents = Object.keys(events).length > 0 ? true : false;
 
         loadCommonPArtials(context)
             .then(function () {
-                this.partial('/templates/homePage.hbs', { 'isUserLogedIn': isUserLogedIn() });
+                if (isUserLogedIn()) {
+                    this.loadPartials({
+                        'notFoundForm': '/templates/notFoundError.hbs',
+                    });
+                    this.partial('/templates/homePage.hbs', 
+                    { 'isUserLogedIn': isUserLogedIn(), 'emailUser': getLogedUser().email, 'hasEvents': hasEvents, 'event': events});
+                } else {
+                    this.partial('/templates/homePage.hbs', { 'isUserLogedIn': isUserLogedIn(), 'emailUser': '' });
+                }
+
             });
     });
 
     this.get('/login', function (context) {
-
         loadCommonPArtials(context)
             .then(function () {
                 this.loadPartials({
@@ -52,7 +68,7 @@ let app = Sammy('#root', function () {
 
     this.post('/register', function (context) {
         let { email, password, rePassword } = context.params;
-        console.log(context.params);
+
         if (validatePasswordsAreEqual(password, rePassword) && validateEmail(email)) {
 
             auth.createUserWithEmailAndPassword(email, password)
@@ -63,7 +79,49 @@ let app = Sammy('#root', function () {
         }
     });
 
+    this.get('/logout', function () {
+
+        auth.signOut()
+            .then(() => {
+                window.localStorage.removeItem('user');
+                this.redirect('/homePage');
+            });
+    });
+
+    this.get('/details', function (context) {
+
+        loadCommonPArtials(context)
+            .then(function () {
+                this.partial('/templates/details.hbs', { 'isUserLogedIn': isUserLogedIn(), 'emailUser': getLogedUser().email });
+            });
+    });
+
+    this.get('/organizeEvent', function (context) {
+
+        loadCommonPArtials(context)
+            .then(function () {
+                this.partial('/templates/organizeEventForm.hbs', { 'isUserLogedIn': isUserLogedIn(), 'emailUser': getLogedUser().email });
+            });
+    });
+
+    this.post('/organizeEvent', function (context) {
+        let owner = getLogedUser().uid;
+        let event = {
+            ...context.params,
+            'owner': owner,
+            'partecipants': [owner],
+        };
+
+        sendEventToDB(event)
+            .then(x => {
+                this.redirect('/homePage');
+            });
+    });
 });
+
+function getLogedUser() {
+    return JSON.parse(window.localStorage.getItem('user')) ? JSON.parse(window.localStorage.getItem('user')) : null;
+}
 
 function loadCommonPArtials(context) {
     return context.loadPartials({
@@ -72,9 +130,6 @@ function loadCommonPArtials(context) {
     });
 }
 
-function getLogedUser() {
-    return JSON.parse(window.localStorage.getItem('user'));
-}
 
 function isUserLogedIn() {
     return getLogedUser() ? true : false;
