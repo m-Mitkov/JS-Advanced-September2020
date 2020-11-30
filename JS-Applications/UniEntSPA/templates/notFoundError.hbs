@@ -14,7 +14,9 @@
             UniEnt cannot find any event...
           </div>
           <div class="actions">
+            {{#if isUserLogedIn}}
             <a href="/organizeEvent" class="btn btn-dark btn-lg">Create the first one? </a>
+            {{/if}}
           </div>
         </div>
       </div>

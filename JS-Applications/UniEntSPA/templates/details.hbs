@@ -8,15 +8,18 @@
         src="{{imageURL}}" />
       <div class="my-3 p-3">
         <h2 class="display-5">{{name}}</h2>
-        <p class="infoType">Description:</p>
+        <p class="infoType">Description: </p>
         <p class="event-description">{{description}}</p>
-        <p class="infoType">Date: <small>dateTime</small></p>
-        <p class="infoType">Peope interested in: <small>9</small></p>
-        <p class="infoType">Organizer: <small>PAKO</small></p>
+        <p class="infoType">Date: <small>{{dateTime}}</small></p>
+        <p class="infoType">Peope interested in: <small>{{partecipants.length}}</small></p>
+        <p class="infoType">Organizer: <small>{{organizer}}</small></p>
       </div>
-      <a href="#" class="btn btn-primary btn-lg">Edit the event</a>
-      <a href="#" class="btn btn-danger btn-lg">Close the event</a>
-      <a href="#" class="btn btn-info btn-lg">Join the event</a>
+      {{#if isEventMIne}}
+      <a href="/edit/{{id}}" class="btn btn-primary btn-lg">Edit the event</a>
+      <a href="/delete/{{id}}" class="btn btn-danger btn-lg">Close the event</a>
+      {{else}}
+      <a href="/join/{{id}}" class="btn btn-info btn-lg">Join the event</a>
+      {{/if}}
     </div>
   </div>
 
