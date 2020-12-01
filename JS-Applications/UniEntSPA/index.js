@@ -20,10 +20,12 @@ let app = Sammy('#root', function () {
         loadCommonPArtials(context)
             .then(function () {
                 if (isUserLogedIn() && hasEvents) {
-                    
+
                     this.partial('/templates/homePage.hbs',
-                        { 'isUserLogedIn': isUserLogedIn(), 'emailUser': getLogedUser().email, 'hasEvents': hasEvents, 
-                        'event': { ...context.events }});
+                        {
+                            'isUserLogedIn': isUserLogedIn(), 'emailUser': getLogedUser().email, 'hasEvents': hasEvents,
+                            'event': { ...context.events }
+                        });
 
                 } else {
                     this.loadPartials({
@@ -46,12 +48,14 @@ let app = Sammy('#root', function () {
     });
 
     this.post('/login', function (context) {
-        let { email, password } = context.params;
+        console.log(context);
+        let { email, password} = context.params;
         auth.signInWithEmailAndPassword(email, password)
             .then(res => {
-                let { email, uid } = res.user;
-                window.localStorage.setItem('user', JSON.stringify({ 'email': email, 'uid': uid }));
-                this.redirect('/homePage');
+                let { email, uid, refreshToken} = res.user;
+                console.log(res);
+                window.localStorage.setItem('user', JSON.stringify({ 'email': email, 'uid': uid, 'refreshToken': refreshToken}));
+                // this.redirect('/homePage');
                 successNotificationHandler('Successfully loged in');
             })
             .catch(err => {
@@ -78,7 +82,7 @@ let app = Sammy('#root', function () {
         if (validatePasswordsAreEqual(password, rePassword) && validateEmail(email)) {
 
             auth.createUserWithEmailAndPassword(email, password)
-                .then(() => {
+                .then(x => {
                     successNotificationHandler('Successfull registration!')
                     this.redirect('/login');
                 });
@@ -103,14 +107,15 @@ let app = Sammy('#root', function () {
     });
 
     this.post('/organizeEvent', function (context) {
-        let owner = getLogedUser().uid;
-        let organizer = getLogedUser().email;
+        let {owner, organizer, refreshToken} = getLogedUser();
+        console.log(getLogedUser());
 
         let event = {
             ...context.params,
             'owner': owner,
             'partecipants': [owner],
             'organizer': organizer,
+            'refreshToken': refreshToken
         };
 
         sendEventToDB(event)
@@ -120,61 +125,106 @@ let app = Sammy('#root', function () {
     });
 
     this.get('/details/:id', async function (context) {
-       let id = getIDfromURL();
+        let id = getIDfromURL();
 
-      let event = await getSingleEvent(id)
-       .then(e => {
-        return e;
-       });
-     
+        let event = await getSingleEvent(id)
+            .then(e => {
+                return e;
+            });
+        let validateOwnerEvent = await isEventMine(id);
+        let alredySignedForEvent = await alredyInEvent(id)
+
         loadCommonPArtials(context)
             .then(function () {
-                this.partial('/templates/details.hbs', 
-                { 'isUserLogedIn': isUserLogedIn(), 'emailUser': getLogedUser().email, ...event, 'id': id, 'isEventMIne': isEventMine(id) });
+                this.partial('/templates/details.hbs',
+                    {
+                        'isUserLogedIn': isUserLogedIn(), 'emailUser': getLogedUser().email, ...event, 'id': id, 'isEventMIne': validateOwnerEvent,
+                        'alredyInEvent': alredySignedForEvent
+                    });
             });
     });
 
-    this.get('/edit/:id', async function(context) {
+    this.get('/edit/:id', async function (context) {
         let id = getIDfromURL();
         let email = getLogedUser().email;
 
         let event = await getSingleEvent(id)
-        .then(x => {return x;});
-        
+            .then(x => { return x; });
+
         loadCommonPArtials(context)
-        .then(function () {
-            this.loadPartials({
-                'errorNotify': '/templates/notifications/errorNotify.hbs',
-                'successNotify': '/templates/notifications/successNotify.hbs',
-            })
-            this.partial('/templates/editEventForm.hbs', {'isUserLogedIn': isUserLogedIn(), 'emailUser': email, ...event, 'id': id});
-        });
+            .then(function () {
+                this.loadPartials({
+                    'errorNotify': '/templates/notifications/errorNotify.hbs',
+                    'successNotify': '/templates/notifications/successNotify.hbs',
+                })
+                this.partial('/templates/editEventForm.hbs', { 'isUserLogedIn': isUserLogedIn(), 'emailUser': email, ...event, 'id': id });
+            });
     });
 
-    this.put('/edit/:id',  function(context) {
+    this.put('/edit/:id', function (context) {
         let id = getIDfromURL();
 
-         editEvent({...context.params}, id)
-        .then(x => {
-            successNotificationHandler('Event successfully edited! ')
-            this.redirect('/homePage');
-        })
-        .catch(err => {
-            errorNotificationHandler(err);
-        })
+        editEvent({ ...context.params }, id)
+            .then(x => {
+                successNotificationHandler('Event successfully edited! ')
+                this.redirect(`/details/${id}`);
+            })
+            .catch(err => {
+                errorNotificationHandler(err);
+            })
     });
 
-    this.get('/delete/:id', async function(){
+    this.get('/delete/:id', async function () {
         let id = getIDfromURL();
 
         await deleteEvent(id)
-        .then(x => {
-            successNotificationHandler('Movie successfully deleted');
-            this.redirect('/homePage');
-        })
-        .catch(err => {
-            errorNotificationHandler(err);
+            .then(x => {
+                successNotificationHandler('Movie successfully deleted');
+                this.redirect('/homePage');
+            })
+            .catch(err => {
+                errorNotificationHandler(err);
+            });
+    });
+
+    this.get('/join/:id', async function () {
+        let id = getIDfromURL();
+        let curentUserId = getLogedUser().uid;
+
+        let event = await getSingleEvent(id);
+
+        event.partecipants.push(curentUserId);
+
+        await editEvent(event, id);
+        this.redirect(`/details/${id}`);
+    });
+
+    this.get('/userInfo', async function (context) {
+        let userId = getLogedUser().uid;
+        let eventsUserHas = [];
+        let organizerOfCountEvents = 0;
+
+        let events = await getAllEvents();
+
+        Object.values(events).forEach(x => {
+            if (x.partecipants.includes(userId)) {
+                eventsUserHas.push(x.name);
+            }
+            if (x.owner == userId) {
+                organizerOfCountEvents++;
+            }
         });
+
+        let hasEvents = eventsUserHas.length > 0 ? true : false;
+
+        loadCommonPArtials(context)
+            .then(function () {
+                this.partial('/templates/userInfo.hbs',
+                    {
+                        'isUserLogedIn': isUserLogedIn(), 'emailUser': getLogedUser().email, 'events': organizerOfCountEvents, 'hasEvents': hasEvents,
+                        'event': eventsUserHas
+                    });
+            });
     });
 
 });
@@ -190,7 +240,7 @@ function loadCommonPArtials(context) {
     });
 }
 
-function getIDfromURL(){
+function getIDfromURL() {
     return window.location.pathname.split('/').pop();
 }
 

@@ -2,10 +2,16 @@
   <div class="col-md-6 text-center col-lg">
     <img class="profile-img" src="./images/user.png" />
     <div class="profile-info">
-      <p>Username: <small>PAKO</small></p>
-      <p class="infoType">Organizer of 2 events.</p>
-      <p>LED ZEPPELIN Convert</p>
-      <p>Techno Party</p>
+      <p>Username: <small>{{emailUser}}</small></p>
+      <p class="infoType">Organizer of {{events}} events.</p>
+      <p>Partecipating in:</p>
+      {{#if hasEvents}}
+      {{#each event}}
+      <p>{{this}}</p>
+      {{/each}}
+      {{else}}
       <p>No events</p>
+      {{/if}}
     </div>
+    <button><a href="/homePage">Back to Home</a></button>
   </div>

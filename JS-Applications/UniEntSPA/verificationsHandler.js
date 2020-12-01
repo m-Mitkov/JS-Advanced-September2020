@@ -44,11 +44,28 @@ function errorHandler(msg){
 
 async function isEventMine(id) {
     let curentUserId = await getLogedUser().uid;
+    
     let result;
 
     await getSingleEvent(id)
         .then(res => {
+
             result = res.owner == curentUserId ? true : false;
         });
     return result;
 }
+
+async function alredyInEvent(idMovie){
+    let curentUserId = await getLogedUser().uid;
+    
+    let result;
+
+    await getSingleEvent(idMovie)
+        .then(res => {
+
+            result = res.partecipants.includes(curentUserId) ? true : false;
+        });
+    return result;
+}
+
+
