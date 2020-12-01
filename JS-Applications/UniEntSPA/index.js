@@ -48,14 +48,14 @@ let app = Sammy('#root', function () {
     });
 
     this.post('/login', function (context) {
-        console.log(context);
         let { email, password} = context.params;
+
         auth.signInWithEmailAndPassword(email, password)
             .then(res => {
                 let { email, uid, refreshToken} = res.user;
-                console.log(res);
+                
                 window.localStorage.setItem('user', JSON.stringify({ 'email': email, 'uid': uid, 'refreshToken': refreshToken}));
-                // this.redirect('/homePage');
+                this.redirect('/homePage');
                 successNotificationHandler('Successfully loged in');
             })
             .catch(err => {
@@ -107,14 +107,16 @@ let app = Sammy('#root', function () {
     });
 
     this.post('/organizeEvent', function (context) {
-        let {owner, organizer, refreshToken} = getLogedUser();
-        console.log(getLogedUser());
+        let email = getLogedUser().email;
+        let userID = getLogedUser().uid;
+        let refreshToken = getLogedUser().refreshToken;
+
 
         let event = {
             ...context.params,
-            'owner': owner,
-            'partecipants': [owner],
-            'organizer': organizer,
+            'owner': userID,
+            'partecipants': [email],
+            'organizer': email,
             'refreshToken': refreshToken
         };
 
