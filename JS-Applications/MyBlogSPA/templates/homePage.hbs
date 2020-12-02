@@ -1,0 +1,48 @@
+{{> header}}
+
+{{#if isUserLogedIn}}
+<section id="home-logged">
+  <section class="first-section">
+    <section class="background-container">
+
+      {{!-- CreatePost --}}
+      {{> createBlogForm}}
+
+    </section>
+  </section>
+
+  {{#if hasBlogs}}
+  {{!-- Articles --}}
+  <section class="second-section">
+    <h3>Articles</h3>
+    <hr>
+    <div class="posts-row">
+
+      {{#each post}}
+      {{!-- {{#if isBlogtMine}} --}}
+      <article class="post">
+        <h1>{{title}}</h1>
+        <h2><span>{{category}}</span></h2>
+        <p>{{content}}</p>
+        <a href="/delete/{{id}}" id="delete-button">Delete</a>
+        <a href="/details/{{id}}" id="details-button">Details</a>
+        <a href="/edit/{{id}}" id="edit-button">Edit</a>
+      </article>
+      {{!-- {{/if}} --}}
+      {{/each}}
+
+    </div>
+  </section>
+  {{/if}}
+</section>
+{{else}}
+<section id="home">
+  <section class="background-container">
+    <h1>Welcome to MyBlog!</h1>
+    <div class="auth-buttons">
+      <a href="/login">Login</a>
+      <a href="/register">Register</a>
+    </div>
+  </section>
+</section>
+{{/if}}
