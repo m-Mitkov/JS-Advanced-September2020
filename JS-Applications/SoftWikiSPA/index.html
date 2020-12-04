@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-auth.js"></script>
+
+    <title>Document</title>
+</head>
+
+<h3 class="no-articles" hidden="true">No articles yet</h3>
+
+<body id="root">
+
+
+
+    <script>
+        // Your web app's Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyDg0i9ZSlhGQKvjzIAmpqvRAv0GabzCUKY",
+            authDomain: "shoe-shelf-1135f.firebaseapp.com",
+            databaseURL: "https://shoe-shelf-1135f.firebaseio.com",
+            projectId: "shoe-shelf-1135f",
+            storageBucket: "shoe-shelf-1135f.appspot.com",
+            messagingSenderId: "442765914450",
+            appId: "1:442765914450:web:15aad58dac59071cb78a8b"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+    </script>
+
+</body>
+
+
+
+<script src="/node_modules/jquery/dist/jquery.js"></script>
+<script src="/node_modules/handlebars/dist/handlebars.js"></script>
+<script src="/node_modules/sammy/lib/sammy.js"></script>
+<script src="/node_modules/sammy/lib/plugins/sammy.handlebars.js"></script>
+<!-- <script src="scripts/firebase.js"></script> -->
+
+<script src="src/validationHandler.js"></script>
+<script src="src/app.js" type="module"></script>
+
+</html>
