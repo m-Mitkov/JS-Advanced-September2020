@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Destinations</title>
+    <link rel="stylesheet" href="static/css/style.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-auth.js"></script>
+
+</head>
+
+<div>
+    <div class="notification loadingBox" id="loadingNotify">
+        Loading …
+    </div>
+    <div class="notification infoBox" id="successBox">
+        Info
+    </div>
+    <div class="notification errorBox" id="errorBox">
+        Error: destination name can't be empty!
+    </div>
+
+</div>
+
+<body>
+
+    <!-- Notifications -->
+
+
+    <script>
+        // Your web app's Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyCEnZ2KKORZssDrvFvBETRpKn07qbj5LUE",
+            authDomain: "myblog-3e079.firebaseapp.com",
+            databaseURL: "https://myblog-3e079.firebaseio.com",
+            projectId: "myblog-3e079",
+            storageBucket: "myblog-3e079.appspot.com",
+            messagingSenderId: "586488253780",
+            appId: "1:586488253780:web:8166b4001cd9ba71780cc1"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+    </script>
+
+    <div id="root">
+
+    </div>
+
+    <!-- Modules -->
+    <script src="./node_modules/jquery/dist/jquery.js"></script>
+    <script src="./node_modules/handlebars/dist/handlebars.js"></script>
+    <script src="./node_modules/sammy/lib/sammy.js"></script>
+    <script src="./node_modules/sammy/lib/plugins/sammy.handlebars.js"></script>
+
+    <!-- Scripts -->
+    <script src="scripts/DBHandler.js"></script>
+    <script src="scripts/validationHandler.js"></script>
+    <script src="scripts/app.js"></script>
+
+</body>
+
+</html>
